@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suite name="Suite">
+  <test name="Test">
+      <parameter name="cucumber.features" value="src/test/resources/features/"/>
+      <parameter name="cucumber.filter.name" value=""/>
+       <parameter name="cucumber.filter.tags" value=""/>
+	  <classes>
+        <class name="runner.Runner"/>
+      </classes>
+  </test> <!-- Test -->
+</suite> <!-- Suite -->

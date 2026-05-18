@@ -1,0 +1,83 @@
+name: Cucumber TestNG Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run tests daily at 9 AM UTC
+    - cron: '0 9 * * *'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java-version: ['17']
+    
+    steps:
+      # Step 1: Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Set up JDK
+      - name: Set up JDK ${{ matrix.java-version }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ matrix.java-version }}
+          distribution: 'temurin'
+          cache: maven
+
+      # Step 3: Build the project
+      - name: Build with Maven
+        run: mvn clean install -DskipTests
+
+      # Step 4: Run Cucumber Tests with TestNG
+      - name: Run Cucumber Tests
+        run: mvn test -Dsurefire.suiteXmlFiles=testng.xml
+
+      # Step 5: Generate Cucumber Report (optional)
+      - name: Generate Cucumber Report
+        if: always()
+        run: |
+          echo "Cucumber reports generated in target/cucumber-reports.html"
+
+      # Step 6: Upload Test Reports as Artifacts
+      - name: Upload Test Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cucumber-test-reports
+          path: |
+            target/cucumber-reports.html
+            target/cucumber-reports.json
+            target/surefire-reports/
+
+      # Step 7: Publish TestNG Reports
+      - name: Publish TestNG Report
+        if: always()
+        uses: dorny/test-reporter@v1
+        with:
+          name: TestNG Test Report
+          path: 'target/surefire-reports/TEST-*.xml'
+          reporter: 'java-testng'
+          fail-on-error: false
+
+      # Step 8: Upload Cucumber JSON to GitHub Pages (optional)
+      - name: Comment PR with Test Results
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = 'target/surefire-reports/TEST-runner.Runner.xml';
+            if (fs.existsSync(path)) {
+              const content = fs.readFileSync(path, 'utf8');
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: '✅ Tests completed! Check the artifacts for detailed reports.'
+              });
+            }
