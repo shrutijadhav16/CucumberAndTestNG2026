@@ -2,9 +2,7 @@ name: Cucumber TestNG Tests
 
 on:
   push:
-    branches: [ main, develop ]
   pull_request:
-    branches: [ main, develop ]
   schedule:
     # Run tests daily at 9 AM UTC
     - cron: '0 9 * * *'
@@ -15,6 +13,10 @@ jobs:
     strategy:
       matrix:
         java-version: ['17']
+    
+    env:
+      CHROME_BIN: /usr/bin/chromium-browser
+      DISPLAY: :99
     
     steps:
       # Step 1: Checkout the code
@@ -28,6 +30,12 @@ jobs:
           java-version: ${{ matrix.java-version }}
           distribution: 'temurin'
           cache: maven
+
+      # Step 2.5: Install required dependencies for browser automation
+      - name: Install Chrome dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libnss3 libgconf-2-4 libfontconfig1 libxrender1 libxss1 libappindicator1 libindicator7
 
       # Step 3: Build the project
       - name: Build with Maven

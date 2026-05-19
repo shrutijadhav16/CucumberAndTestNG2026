@@ -4,6 +4,7 @@ import java.util.Properties;
 
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 
@@ -19,7 +20,16 @@ public class DriverFactory {
 		String browser = prop.getProperty("browser");
 		if(browser.equalsIgnoreCase("chrome")) {
 			WebDriverManager.chromedriver().setup();
-			driver = new ChromeDriver();
+			ChromeOptions options = new ChromeOptions();
+			// Enable headless mode for CI/CD environments
+			if (isRunningInCI()) {
+				options.addArguments("--headless");
+				options.addArguments("--disable-gpu");
+				options.addArguments("--no-sandbox");
+				options.addArguments("--disable-dev-shm-usage");
+				options.addArguments("--window-size=1920,1080");
+			}
+			driver = new ChromeDriver(options);
 		}
 		else if(browser.equalsIgnoreCase("firefox")) {
 			WebDriverManager.firefoxdriver().setup();
@@ -35,6 +45,13 @@ public class DriverFactory {
 		GlobalVariables.getInstance().setDriver(driver);
 		return driver;
 		
+	}
+	
+	// Helper method to detect if running in CI/CD environment
+	private boolean isRunningInCI() {
+		return System.getenv("GITHUB_ACTIONS") != null || 
+		       System.getenv("CI") != null ||
+		       System.getenv("BUILD_ID") != null;
 	}
 	
 }
