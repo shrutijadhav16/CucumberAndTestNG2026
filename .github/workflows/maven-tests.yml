@@ -2,11 +2,11 @@ name: Cucumber TestNG Tests
 
 on:
   push:
-     branches:
-        - main
+    branches:
+      - main
   pull_request:
-	branches:
-	        - main
+    branches:
+      - main
   schedule:
     # Run tests daily at 9 AM UTC
     - cron: '0 9 * * *'
@@ -23,11 +23,9 @@ jobs:
       DISPLAY: :99
     
     steps:
-      # Step 1: Checkout the code
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Step 2: Set up JDK
       - name: Set up JDK ${{ matrix.java-version }}
         uses: actions/setup-java@v4
         with:
@@ -35,7 +33,6 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      # Step 2.5: Install Chrome and required dependencies
       - name: Install Chrome and dependencies
         run: |
           sudo apt-get update
@@ -43,21 +40,12 @@ jobs:
           chromium-browser --version
           chromedriver --version
 
-      # Step 3: Build the project
       - name: Build with Maven
         run: mvn clean install -DskipTests
 
-      # Step 4: Run Cucumber Tests with TestNG
       - name: Run Cucumber Tests
         run: mvn test -Dsurefire.suiteXmlFiles=testng.xml
 
-      # Step 5: Generate Cucumber Report (optional)
-      - name: Generate Cucumber Report
-        if: always()
-        run: |
-          echo "Cucumber reports generated in target/cucumber-reports.html"
-
-      # Step 6: Upload Test Reports as Artifacts
       - name: Upload Test Reports
         if: always()
         uses: actions/upload-artifact@v4
@@ -68,7 +56,6 @@ jobs:
             target/cucumber-reports.json
             target/surefire-reports/
 
-      # Step 7: Publish TestNG Reports
       - name: Publish TestNG Report
         if: always()
         uses: dorny/test-reporter@v1
@@ -78,7 +65,6 @@ jobs:
           reporter: 'java-testng'
           fail-on-error: false
 
-      # Step 8: Upload Cucumber JSON to GitHub Pages (optional)
       - name: Comment PR with Test Results
         if: always() && github.event_name == 'pull_request'
         uses: actions/github-script@v7
