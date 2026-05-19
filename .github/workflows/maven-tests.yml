@@ -62,7 +62,7 @@ jobs:
         with:
           name: TestNG Test Report
           path: 'target/surefire-reports/TEST-*.xml'
-          reporter: 'java-testng'
+          reporter: 'testng'
           fail-on-error: false
 
       - name: Comment PR with Test Results
