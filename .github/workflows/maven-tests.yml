@@ -46,7 +46,7 @@ jobs:
       - name: Run Cucumber Tests
         run: mvn test -Dsurefire.suiteXmlFiles=testng.xml
 
-      - name: Upload Test Reports
+      - name: Upload Test Reportsjuk
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -62,7 +62,7 @@ jobs:
         with:
           name: TestNG Test Report
           path: 'target/surefire-reports/TEST-*.xml'
-          reporter: 'testng'
+          reporter: 'java-junit'
           fail-on-error: false
 
       - name: Comment PR with Test Results
